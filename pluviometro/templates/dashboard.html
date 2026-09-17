@@ -1,0 +1,628 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Dashboard do Pluviômetro</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    >
+
+    <style>
+        body {
+            background-color: #f5f7fa;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+            color: white;
+            border-radius: 0 0 1rem 1rem;
+        }
+
+        .stat-card {
+            border: 0;
+            border-radius: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.4rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .dashboard-card {
+            border: 0;
+            border-radius: 1rem;
+        }
+
+        .last-reading {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            display: inline-block;
+            border-radius: 50%;
+            background-color: #198754;
+        }
+
+        footer {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Cabeçalho -->
+    <header class="dashboard-header shadow-sm mb-4">
+        <div class="container py-4">
+
+            <div class="d-flex flex-column flex-md-row
+                        justify-content-between
+                        align-items-md-center gap-3">
+
+                <div>
+                    <h1 class="h3 mb-1">
+                        <i class="bi bi-cloud-rain me-2"></i>
+                        Dashboard do Pluviômetro
+                    </h1>
+
+                    <p class="mb-0 opacity-75">
+                        Monitoramento de precipitação
+                    </p>
+                </div>
+
+                <div class="text-md-end">
+                    <div class="small opacity-75">
+                        Dispositivo
+                    </div>
+
+                    <strong id="dispositivo">
+                        PLUVIO-001
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+    </header>
+
+
+    <main class="container pb-4">
+
+        <!-- Filtro -->
+        <div class="card dashboard-card shadow-sm mb-4">
+
+            <div class="card-body">
+
+                <div class="row align-items-end g-3">
+
+                    <div class="col-md-4">
+
+                        <label
+                            for="select-dispositivo"
+                            class="form-label fw-semibold"
+                        >
+                            Pluviômetro
+                        </label>
+
+                        <select
+                            id="select-dispositivo"
+                            class="form-select"
+                        >
+                            <option value="PLUVIO-001">
+                                PLUVIO-001
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-8 text-md-end">
+
+                        <span class="badge text-bg-success">
+                            <span class="status-dot bg-white me-1"></span>
+                            Online
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+        <!-- Filtro de período -->
+        <div class="card dashboard-card shadow-sm mb-4">
+
+            <div class="card-body">
+
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-calendar-range fs-4 text-primary me-2"></i>
+
+                    <div>
+                        <h5 class="card-title mb-0">
+                            Volume por período
+                        </h5>
+
+                        <small class="text-muted">
+                            Informe o período para calcular a precipitação acumulada.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="row g-3 align-items-end">
+
+                    <!-- Data/hora inicial -->
+                    <div class="col-12 col-md-5">
+
+                        <label
+                            for="periodo-inicio"
+                            class="form-label fw-semibold"
+                        >
+                            Início
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="periodo-inicio"
+                            class="form-control"
+                        >
+
+                    </div>
+
+                    <!-- Data/hora final -->
+                    <div class="col-12 col-md-5">
+
+                        <label
+                            for="periodo-fim"
+                            class="form-label fw-semibold"
+                        >
+                            Fim
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="periodo-fim"
+                            class="form-control"
+                        >
+
+                    </div>
+
+                    <!-- Botão -->
+                    <div class="col-12 col-md-2">
+
+                        <button
+                            type="button"
+                            id="btn-calcular-periodo"
+                            class="btn btn-primary w-100"
+                        >
+                            <i class="bi bi-calculator me-1"></i>
+                            Calcular
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- Resultado -->
+                <div
+                    id="resultado-periodo"
+                    class="alert alert-primary mt-4 mb-0 d-none"
+                >
+
+                    <div class="d-flex align-items-center">
+
+                        <i class="bi bi-cloud-rain fs-2 me-3"></i>
+
+                        <div>
+
+                            <div class="small">
+                                Precipitação acumulada no período
+                            </div>
+
+                            <div
+                                id="volume-periodo"
+                                class="fs-3 fw-bold"
+                            >
+                                -- mm
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Erro -->
+                <div
+                    id="erro-periodo"
+                    class="alert alert-danger mt-4 mb-0 d-none"
+                >
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Indicadores -->
+        <div class="row g-4 mb-4">
+
+            <!-- Chuva hoje -->
+            <div class="col-12 col-sm-6 col-xl-3">
+
+                <div class="card stat-card shadow-sm h-100">
+
+                    <div class="card-body">
+
+                        <div class="d-flex
+                                    justify-content-between
+                                    align-items-start">
+
+                            <div>
+
+                                <div class="stat-label mb-2">
+                                    Chuva hoje
+                                </div>
+
+                                <div
+                                    id="chuva-hoje"
+                                    class="stat-value"
+                                >
+                                    --
+                                </div>
+
+                                <small class="text-muted">
+                                    acumulado diário
+                                </small>
+
+                            </div>
+
+                            <div class="stat-icon bg-primary-subtle text-primary">
+                                <i class="bi bi-cloud-rain"></i>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Última hora -->
+            <div class="col-12 col-sm-6 col-xl-3">
+
+                <div class="card stat-card shadow-sm h-100">
+
+                    <div class="card-body">
+
+                        <div class="d-flex
+                                    justify-content-between
+                                    align-items-start">
+
+                            <div>
+
+                                <div class="stat-label mb-2">
+                                    Última hora
+                                </div>
+
+                                <div
+                                    id="chuva-hora"
+                                    class="stat-value"
+                                >
+                                    --
+                                </div>
+
+                                <small class="text-muted">
+                                    acumulado
+                                </small>
+
+                            </div>
+
+                            <div class="stat-icon bg-info-subtle text-info">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Este mês -->
+            <div class="col-12 col-sm-6 col-xl-3">
+
+                <div class="card stat-card shadow-sm h-100">
+
+                    <div class="card-body">
+
+                        <div class="d-flex
+                                    justify-content-between
+                                    align-items-start">
+
+                            <div>
+
+                                <div class="stat-label mb-2">
+                                    Este mês
+                                </div>
+
+                                <div
+                                    id="chuva-mes"
+                                    class="stat-value"
+                                >
+                                    --
+                                </div>
+
+                                <small class="text-muted">
+                                    acumulado mensal
+                                </small>
+
+                            </div>
+
+                            <div class="stat-icon bg-warning-subtle text-warning">
+                                <i class="bi bi-calendar3"></i>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Total -->
+            <div class="col-12 col-sm-6 col-xl-3">
+
+                <div class="card stat-card shadow-sm h-100">
+
+                    <div class="card-body">
+
+                        <div class="d-flex
+                                    justify-content-between
+                                    align-items-start">
+
+                            <div>
+
+                                <div class="stat-label mb-2">
+                                    Total acumulado
+                                </div>
+
+                                <div
+                                    id="chuva-total"
+                                    class="stat-value"
+                                >
+                                    --
+                                </div>
+
+                                <small class="text-muted">
+                                    desde o início
+                                </small>
+
+                            </div>
+
+                            <div class="stat-icon bg-success-subtle text-success">
+                                <i class="bi bi-bar-chart-line"></i>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Informações -->
+        <div class="row g-4">
+
+            <!-- Última leitura -->
+            <div class="col-12 col-lg-4">
+
+                <div class="card dashboard-card shadow-sm h-100">
+
+                    <div class="card-body">
+
+                        <h5 class="card-title mb-4">
+                            <i class="bi bi-activity me-2"></i>
+                            Última leitura
+                        </h5>
+
+                        <div class="text-muted small mb-1">
+                            Data e hora
+                        </div>
+
+                        <div
+                            id="ultima-leitura"
+                            class="last-reading mb-4"
+                        >
+                            --
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex
+                                    justify-content-between">
+
+                            <span class="text-muted">
+                                Pulsos registrados
+                            </span>
+
+                            <strong id="pulsos">
+                                --
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Gráfico -->
+            <div class="col-12 col-lg-8">
+
+                <div class="card dashboard-card shadow-sm h-100">
+
+                    <div class="card-body">
+
+                        <div class="d-flex
+                                    flex-column
+                                    flex-sm-row
+                                    justify-content-between
+                                    align-items-sm-center
+                                    gap-2
+                                    mb-3">
+
+                            <div>
+                                <h5 class="card-title mb-1">
+                                    <i class="bi bi-bar-chart me-2"></i>
+                                    Precipitação
+                                </h5>
+
+                                <small class="text-muted">
+                                    Volume acumulado por período
+                                </small>
+                            </div>
+
+                            <select
+                                id="periodo-grafico"
+                                class="form-select form-select-sm"
+                                style="width: auto;"
+                            >
+                                <option value="24h">
+                                    Últimas 24 horas
+                                </option>
+
+                                <option value="7d">
+                                    Últimos 7 dias
+                                </option>
+
+                                <option value="30d">
+                                    Últimos 30 dias
+                                </option>
+                            </select>
+
+                        </div>
+
+                        <div
+                            id="grafico-loading"
+                            class="text-center text-muted py-5 d-none"
+                        >
+                            <div
+                                class="spinner-border"
+                                role="status"
+                            ></div>
+
+                            <div class="mt-2">
+                                Carregando gráfico...
+                            </div>
+                        </div>
+
+                        <div
+                            id="grafico-erro"
+                            class="alert alert-danger d-none"
+                        >
+                        </div>
+
+                        <div
+                            class="position-relative"
+                            style="height: 350px;"
+                        >
+                            <canvas
+                                id="grafico-chuva"
+                            ></canvas>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Rodapé de atualização -->
+        <div class="text-center mt-4">
+
+            <small class="text-muted">
+                <i class="bi bi-arrow-repeat me-1"></i>
+                Dashboard atualizado automaticamente
+            </small>
+
+        </div>
+
+    </main>
+
+
+    <footer class="container text-center py-4">
+
+        Sistema de monitoramento pluviométrico
+
+    </footer>
+
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js">
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <!-- Dashboard -->
+    <script
+        src="{% static 'pluviometro/js/dashboard.js' %}">
+    </script>
+
+</body>
+
+</html>

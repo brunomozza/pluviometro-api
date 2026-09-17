@@ -6,6 +6,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.shortcuts import render
 
 from .models import Leitura
 from .serializers import LeituraSerializer
@@ -350,3 +351,235 @@ class HistoricoLeiturasView(APIView):
         return Response(
             serializer.data
         )
+
+
+from django.utils import timezone
+from django.db.models import Sum
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+from .models import Leitura
+
+
+FUSO_BRASIL = ZoneInfo("America/Sao_Paulo")
+
+
+class VolumePeriodoView(APIView):
+
+    def get(self, request):
+
+        dispositivo = request.query_params.get("dispositivo")
+        inicio = request.query_params.get("inicio")
+        fim = request.query_params.get("fim")
+
+        if not dispositivo:
+            return Response(
+                {"erro": "Informe o dispositivo."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not inicio or not fim:
+            return Response(
+                {"erro": "Informe início e fim do período."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+
+            inicio = datetime.fromisoformat(inicio)
+            fim = datetime.fromisoformat(fim)
+
+            # Define o fuso caso o datetime venha sem timezone
+            if timezone.is_naive(inicio):
+                inicio = inicio.replace(
+                    tzinfo=FUSO_BRASIL
+                )
+
+            if timezone.is_naive(fim):
+                fim = fim.replace(
+                    tzinfo=FUSO_BRASIL
+                )
+
+        except ValueError:
+
+            return Response(
+                {"erro": "Formato de data inválido."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if inicio >= fim:
+
+            return Response(
+                {
+                    "erro":
+                    "A data inicial deve ser anterior à data final."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        leituras = Leitura.objects.filter(
+            dispositivo=dispositivo,
+            data_hora__gte=inicio,
+            data_hora__lt=fim
+        )
+
+        resultado = leituras.aggregate(
+            total=Sum("chuva_mm")
+        )
+
+        total = resultado["total"] or 0
+
+        return Response({
+            "dispositivo": dispositivo,
+            "inicio": inicio.astimezone(
+                FUSO_BRASIL
+            ).strftime("%d/%m/%Y %H:%M:%S"),
+
+            "fim": fim.astimezone(
+                FUSO_BRASIL
+            ).strftime("%d/%m/%Y %H:%M:%S"),
+
+            "chuva_mm": float(total),
+            "quantidade_leituras": leituras.count(),
+        })
+
+
+from datetime import timedelta
+
+from django.db.models import Sum
+from django.db.models.functions import TruncHour, TruncDay
+from django.utils import timezone
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+from .models import Leitura
+
+
+class GraficoLeiturasView(APIView):
+
+    def get(self, request):
+
+        dispositivo = request.query_params.get(
+            "dispositivo",
+            "PLUVIO-001"
+        )
+
+        periodo = request.query_params.get(
+            "periodo",
+            "24h"
+        )
+
+        agora = timezone.now()
+
+
+        # ------------------------------------------
+        # Define período
+        # ------------------------------------------
+
+        if periodo == "24h":
+
+            inicio = agora - timedelta(hours=24)
+
+            truncacao = TruncHour(
+                "data_hora"
+            )
+
+        elif periodo == "7d":
+
+            inicio = agora - timedelta(days=7)
+
+            truncacao = TruncDay(
+                "data_hora"
+            )
+
+        elif periodo == "30d":
+
+            inicio = agora - timedelta(days=30)
+
+            truncacao = TruncDay(
+                "data_hora"
+            )
+
+        else:
+
+            return Response(
+                {
+                    "erro":
+                    "Período inválido."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+        # ------------------------------------------
+        # Consulta
+        # ------------------------------------------
+
+        dados = (
+            Leitura.objects
+            .filter(
+                dispositivo=dispositivo,
+                data_hora__gte=inicio,
+                data_hora__lte=agora
+            )
+            .annotate(
+                periodo=truncacao
+            )
+            .values("periodo")
+            .annotate(
+                chuva_mm=Sum("chuva_mm")
+            )
+            .order_by("periodo")
+        )
+
+
+        # ------------------------------------------
+        # Formata resposta
+        # ------------------------------------------
+
+        resultado = []
+
+        for item in dados:
+
+            data = timezone.localtime(
+                item["periodo"]
+            )
+
+            if periodo == "24h":
+
+                label = data.strftime(
+                    "%d/%m %H:%M"
+                )
+
+            else:
+
+                label = data.strftime(
+                    "%d/%m"
+                )
+
+
+            resultado.append({
+                "periodo": label,
+                "chuva_mm": float(
+                    item["chuva_mm"] or 0
+                )
+            })
+
+
+        return Response({
+            "dispositivo": dispositivo,
+            "periodo": periodo,
+            "dados": resultado
+        })
+
+def dashboard(request):
+    return render(
+        request,
+        "dashboard.html"
+    )

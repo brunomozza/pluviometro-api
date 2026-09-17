@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/6.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,8 +25,7 @@ SECRET_KEY = "django-insecure-^f32h71i54qd!m3m_5lj+g!bippsl06#2ytjqj6i3jw7a#@u*a
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'https://repacking-tarantula-genetics.ngrok-free.dev',
-                 'repacking-tarantula-genetics.ngrok-free.dev']
+ALLOWED_HOSTS = ['127.0.0.1', '167.234.255.204', 'brunomozza.com.br']
 
 
 # Application definition
@@ -75,23 +74,25 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
+
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': "db-pluviometro",
+        'PORT': "5432",
     }
 }
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": "pluviometro",
-#         "USER": "postgres",
-#         "PASSWORD": "SUA_SENHA",
-#         "HOST": "localhost",
-#         "PORT": "5432",
-#     }
-# }
 
 
 # Password validation
@@ -122,7 +123,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/pluviometro/static/"
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 # Email
@@ -131,3 +134,5 @@ STATIC_URL = "static/"
 MAILERS = {
     "default": {"BACKEND": "django.core.mail.backends.console.EmailBackend", },
 }
+
+FORCE_SCRIPT_NAME = '/pluviometro'

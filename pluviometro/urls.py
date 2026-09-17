@@ -1,44 +1,13 @@
 from django.urls import path
 
-from .views import (
-    PluviometrosView,
-    LeiturasView,
-    ResumoLeiturasView,
-    LeiturasHojeView,
-    HistoricoLeiturasView,
-)
+from .views import dashboard
 
 
 urlpatterns = [
 
     path(
-        "pluviometros/",
-        PluviometrosView.as_view(),
-        name="pluviometros"
+        "",
+        dashboard,
+        name="dashboard"
     ),
-
-    path(
-        "leituras/",
-        LeiturasView.as_view(),
-        name="leituras"
-    ),
-
-    path(
-        "leituras/resumo/",
-        ResumoLeiturasView.as_view(),
-        name="leituras-resumo"
-    ),
-
-    path(
-        "leituras/hoje/",
-        LeiturasHojeView.as_view(),
-        name="leituras-hoje"
-    ),
-
-    path(
-        "leituras/historico/",
-        HistoricoLeiturasView.as_view(),
-        name="leituras-historico"
-    ),
-
 ]
