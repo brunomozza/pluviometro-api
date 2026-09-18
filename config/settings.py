@@ -27,6 +27,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', '167.234.255.204', 'brunomozza.com.br']
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://brunomozza.com.br",
+    "https://www.brunomozza.com.br",
+]
 
 # Application definition
 

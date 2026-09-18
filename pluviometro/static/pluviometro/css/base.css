@@ -1,0 +1,42 @@
+body {
+    background-color: #f5f7fa;
+}
+
+
+/* ==============================
+   NAVBAR
+   ============================== */
+
+.navbar-brand {
+    font-weight: 600;
+}
+
+
+/* ==============================
+   CARDS
+   ============================== */
+
+.dashboard-card,
+.stat-card {
+    border: 0;
+    border-radius: 1rem;
+}
+
+
+/* ==============================
+   TABELAS
+   ============================== */
+
+.table th {
+    white-space: nowrap;
+}
+
+
+/* ==============================
+   FOOTER
+   ============================== */
+
+footer {
+    color: #6c757d;
+    font-size: 0.85rem;
+}

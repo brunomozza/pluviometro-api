@@ -1,13 +1,13 @@
 from datetime import timedelta
 from zoneinfo import ZoneInfo
-
+from django.urls import reverse_lazy
 from django.db.models import Max, Sum
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import render
-
+from django.views.generic import ListView, DeleteView
 from .models import Leitura
 from .serializers import LeituraSerializer
 
@@ -17,6 +17,51 @@ from .serializers import LeituraSerializer
 
 FUSO_BRASIL = ZoneInfo("America/Sao_Paulo")
 
+
+# ==========================================================
+# LISTAGEM DE LEITURAS
+# ==========================================================
+
+class ListaLeiturasView(ListView):
+
+    model = Leitura
+    template_name = "pluviometro/leituras/lista.html"
+    context_object_name = "leituras"
+    paginate_by = 50
+
+    def get_queryset(self):
+        dispositivo = self.request.GET.get("dispositivo")
+
+        queryset = Leitura.objects.all().order_by("-data_hora")
+
+        if dispositivo:
+            queryset = queryset.filter(
+                dispositivo=dispositivo
+            )
+
+        return queryset
+
+
+# ==========================================================
+# DELETE DE LEITURA
+# ==========================================================
+
+class DeleteLeituraView(DeleteView):
+
+    model = Leitura
+    template_name = (
+        "pluviometro/leituras/"
+        "confirmar_exclusao.html"
+    )
+    success_url = reverse_lazy("lista_leituras")
+
+    def get_success_url(self):
+        dispositivo = self.request.GET.get("dispositivo")
+
+        if dispositivo:
+            return f"{reverse_lazy('lista_leituras')}?dispositivo={dispositivo}"
+
+        return reverse_lazy("lista_leituras")
 
 # ==========================================================
 # GET /api/pluviometros/
@@ -581,5 +626,5 @@ class GraficoLeiturasView(APIView):
 def dashboard(request):
     return render(
         request,
-        "dashboard.html"
+        "pluviometro/dashboard.html"
     )

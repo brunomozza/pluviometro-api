@@ -1,0 +1,152 @@
+{% extends "pluviometro/base.html" %}
+
+
+{% block title %}
+    Excluir leitura
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-12 col-md-7 col-lg-5">
+
+
+            <div class="card shadow-sm border-danger">
+
+
+                <div class="card-header bg-danger text-white">
+
+                    <h1 class="h5 mb-0">
+
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+
+                        Confirmar exclusão
+
+                    </h1>
+
+                </div>
+
+
+                <div class="card-body">
+
+
+                    <p>
+
+                        Tem certeza que deseja excluir esta leitura?
+
+                    </p>
+
+
+                    <div class="bg-light rounded p-3 mb-4">
+
+                        <div class="row mb-2">
+
+                            <div class="col-5 text-muted">
+                                ID
+                            </div>
+
+                            <div class="col-7 fw-semibold">
+                                {{ object.id }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="row mb-2">
+
+                            <div class="col-5 text-muted">
+                                Dispositivo
+                            </div>
+
+                            <div class="col-7 fw-semibold">
+                                {{ object.dispositivo }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="row mb-2">
+
+                            <div class="col-5 text-muted">
+                                Pulsos
+                            </div>
+
+                            <div class="col-7 fw-semibold">
+                                {{ object.pulsos }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="row mb-2">
+
+                            <div class="col-5 text-muted">
+                                Chuva
+                            </div>
+
+                            <div class="col-7 fw-semibold">
+                                {{ object.chuva_mm|floatformat:3 }} mm
+                            </div>
+
+                        </div>
+
+
+                        <div class="row">
+
+                            <div class="col-5 text-muted">
+                                Data/Hora
+                            </div>
+
+                            <div class="col-7 fw-semibold">
+                                {{ object.data_hora|date:"d/m/Y H:i:s" }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <form method="post">
+
+                        {% csrf_token %}
+
+
+                        <div class="d-flex gap-2">
+
+                            <button
+                                type="submit"
+                                class="btn btn-danger"
+                                autofocus
+                            >
+                                <i class="bi bi-trash me-1"></i>
+                                Sim, excluir
+                            </button>
+                            <a
+                                href="{% url 'lista_leituras' %}"
+                                class="btn btn-secondary"
+                            >
+
+                                Cancelar
+
+                            </a>
+
+                        </div>
+
+                    </form>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
